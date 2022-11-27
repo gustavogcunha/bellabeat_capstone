@@ -1,0 +1,568 @@
+---
+title: ""
+output: html_document
+---
+
+## **Estudo de Caso Bellabeat**
+
+Esta análise é um ESTUDO DE CASO proposto para concluir com sucesso a FORMAÇÃO PROFISSIONAL GOOGLE DATA ANALYTICS e obter o certificado no final do curso. A proposta é simular um projeto real, na qual um analista de dados poderia encontrar profissionalmente, tendo como o objetivo ajudar a equipe de marketing a obter insigths para novas estratégias comerciais da empresa.
+
+### Sobre a Empresa
+
+![](bellabeat2.jpeg)
+
+A Bellabeat é uma fabricante de produtos de alta tecnologia voltados para a saúde de mulheres. A empresa busca expandir o seu sucesso, pois a companhia possui potencial para se tornar um participante importante no mercado global de dispositivos inteligentes.
+
+Urška Sršen e Sando Mur, fundadores da empresa, acreditam que os dados coletados de condicionamento físico, através de dispositivos inteligentes, podem ajudar a obter novas oportunidades de crescimento da empresa.
+
+### Cenário
+
+Eu sou um analista de dados, que trabalha na equipe de analistas de marketing da empresa. Nosso objetivo é identificar oportunidades potenciais de crescimento e recomendações para melhorar as estratégias de marketing da empresa, com base nas tendências de uso dos dispositivos inteligentes.
+
+### Perguntas para atingir a meta da análise
+
+• QUAIS são algumas tendências de uso de dispositivos inteligentes?
+
+• COMO essas tendências podem se aplicar aos clientes da Bellabeat?
+
+• COMO essas tendências podem ajudar a influenciar a estratégia de marketing da Bellabeat?
+
+### Informações sobre o conjunto de dados
+
+O conjunto de dados é público e está armazenado na nuvem e disponível no link:
+
+<https://www.kaggle.com/datasets/arashnic/fitbit>
+
+Os dados são referentes a informações coletadas de usuários da empresa Fitbit (empresa concorrente da Bellabeat). Este conjunto de dados apresentam informações de condicionamento físico pessoal de trinta usuários da Fitbit, que consentiram com o envio de dados pessoais do rastreador, incluindo quantidade de horas e minuto de atividade física, frequência cardíaca e monitoramento de sono, que podem ser usadas para explorar os hábitos dos usuários.
+
+### Ferramentas Utilizadas para Análise
+
+• Microsoft (MS) Excel: Utilizado para realizar a inspeção inicial dos dados;
+
+• R Studio: Utilizado para limpar, transformar, organizar, resumir os conjuntos de dados e criar visualizações. Aqui está o link para script: [**link**](https://github.com/gustavogcunha/bellabeat_capstone/blob/main/Script_Bellabeat_Capstone.R)
+
+### Preparação dos Dados
+
+A preparação dos dados foi realizada através de uma inspeção inicial realizada no MS Excel, para identificar as variáveis e os dados coletados.
+
+Os trinta usuários do fitbit consentiram em fornecer seus dados e foram gerados 18 arquivos no formato "csv", que coletaram informações sobre: atividade diária, calorias (diariamente, de hora em hora e por minuto), intensidades (diariamente, de hora em hora e por minuto), número de passos (diariamente, por hora e por minuto), frequência cardíaca (por segundo), METs minuto, sono (dia e minuto) e informações de registro de peso.
+
+Durante a inspeção inicial, foram analisados os arquivos csv e observou-se que os arquivos "dailyCalories", "dailyIntensity" e "dailySteps", já estão incluídos no arquivo "dailyActivity". Desta forma, estes três arquivos não serão utilizados. Da mesma forma, optou-se por utilizar apenas os dados de hora em hora, então nenhum conjunto de dados "por minuto" ou "por segundo" será importado ou usado para esta análise.
+
+Portanto, para esta análise, o conjunto de dados relevantes que serão utilizados são: "dailyActivity", "hourlyCalories", "hourlyIntensities", "hourlySteps", "sleepDay" e "weightLogInfo".
+
+### Instalando e Carregando os Pacotes
+
+```{r}
+# Caso precise instalar os pacotes, retirar a hashtag das linhas abaixo
+# install.packages("tidyverse")
+# install.packages("lubridate")
+# install.packages("dplyr")
+# install.packages("ggplot2")
+# install.packages("tidyr")
+# install.packages("ggrepel")
+
+# Carregando os pacotes
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(ggrepel)
+```
+
+### Importando o Conjunto de Dados
+
+```{r}
+activity <- read.csv("Dataset/dailyActivity_merged.csv")
+calories <- read.csv("Dataset/hourlyCalories_merged.csv")
+intensities <- read.csv("Dataset/hourlyIntensities_merged.csv")
+steps <- read.csv("Dataset/hourlySteps_merged.csv")
+sleep <- read.csv("Dataset/sleepDay_merged.csv")
+weight <- read.csv("Dataset/weightLogInfo_merged.csv")
+```
+
+Para checar se os dados foram corretamente importados, vou utilizar as função head()
+
+```{r}
+head(activity)
+head(calories)
+head(intensities)
+head(steps)
+head(sleep)
+head(weight)
+```
+
+Continuando a checagem dos dados, vou utilizar a função glimpse(), que mostra o número de linhas, número de colunas, nomes de coluna e tipos de dados das colunas.
+
+```{r}
+glimpse(activity)
+glimpse(calories)
+glimpse(intensities)
+glimpse(steps)
+glimpse(sleep)
+glimpse(weight)
+```
+
+### Limpeza dos dados
+
+O processo de limpeza passo a passo envolve a verificação de tipos de dados consistentes, corretos, avaliando se há dados nulos, padronizando convenções de nomenclatura para colunas e valores, removendo qualquer observações duplicadas e verificando se os tipos de dados fazem sentido.
+
+Eu detectei problemas na formatação dos dados de data/hora. Desta forma, antes da análise, preciso convertê-los para o formato de data e hora e dividir em duas colunas separadas.
+
+```{r}
+# activity
+activity$ActivityDate = as.POSIXct(activity$ActivityDate, format = "%m/%d/%Y", tz = Sys.timezone())
+activity$date <- format(activity$ActivityDate, format = "%d/%m/%Y")
+# calories
+calories$ActivityHour = as.POSIXct(calories$ActivityHour, format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+calories$date <- format(calories$ActivityHour, format = "%d/%m/%Y")
+calories$time <- format(calories$ActivityHour, format = "%H:%M:%S")
+# intensities
+intensities$ActivityHour = as.POSIXct(intensities$ActivityHour, format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+intensities$date <- format(intensities$ActivityHour, format = "%d/%m/%Y")
+intensities$time <- format(intensities$ActivityHour, format = "%H:%M:%S")
+# sleep
+sleep$SleepDay = as.POSIXct(sleep$SleepDay, format = "%m/%d/%Y", tz = Sys.timezone())
+sleep$date <- format(sleep$SleepDay, format = "%d/%m/%Y")
+# steps
+steps$ActivityHour = as.POSIXct(steps$ActivityHour, format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+steps$date <- format(steps$ActivityHour, format = "%d/%m/%Y")
+steps$time <- format(steps$ActivityHour, format = "%H:%M:%S")
+# weight
+weight$Date = as.POSIXct(weight$Date, format = "%m/%d/%Y %I:%M:%S %p", tz = Sys.timezone())
+weight$date <- format(weight$Date, format = "%d/%m/%Y")
+weight$time <- format(weight$Date, format = "%H:%M:%S")
+```
+
+Agora que os dados estão formatados, o próximo passo é explorar os conjuntos de dados.
+
+```{r}
+n_distinct(activity$Id)
+n_distinct(calories$Id)
+n_distinct(intensities$Id)
+n_distinct(sleep$Id)
+n_distinct(steps$Id)
+n_distinct(weight$Id)
+```
+
+A informação acima apresenta o número de participantes em cada conjunto de dados.
+
+Há 33 participantes nos conjuntos de dados de atividade (activity), calorias (calories), intensidade (intensity) e passos (steps); No conjunto de dados sobre sono (sleep), temos 24 participantes; e no conjunto de dados sobre peso (weight), temos apenas 8 participantes.
+
+Eu decidi desconsiderar o conjunto de dados sobre peso (weight), pois 8 participantes é pouco significativo para fazer quaisquer recomendações e conclusões com base nestas informações.
+
+O próximo passo é descobrir quantos dias foram utilizados para a coleta das informações dos participantes.
+
+```{r}
+n_distinct(activity$date)
+n_distinct(calories$date)
+n_distinct(intensities$date)
+n_distinct(sleep$date)
+n_distinct(steps$date)
+```
+
+Todos os conjuntos de dados apresentam a coleta de informações durante 31 dias. Todavia, não quer dizer que todos os participantes possuem informações coletadas durante estes 31 dias.
+
+```{r}
+activity %>%
+  group_by(Id) %>%
+  summarise(Days = length(unique(date)))
+```
+
+É possível observar que vários usuários que participaram da pesquisa (Id) não possuem dados coletados durante os 31 dias.
+
+Vamos verificar a quantidade de dias coletados pela soma do número de usuários.
+
+```{r}
+user_day <- activity %>%
+  group_by(Id) %>%
+  summarise(Days = length(unique(date)))
+
+user_day %>%
+  group_by(Days) %>%
+  summarise(User = length(unique(Id)))
+```
+
+Segundo os dados acima é possível verificar que 21 participantes possuem dados coletados durante os 31 dias de pesquisa. O restante não possuem dados completos.
+
+Agora vamos verificar se há valores nulos nos conjuntos de dados.
+
+```{r}
+# activity
+activity %>%
+  is.na() %>%
+  sum()
+# calories
+calories %>%
+  is.na() %>%
+  sum()
+# intensity
+intensities %>%
+  is.na() %>%
+  sum()
+# sleep
+sleep %>%
+  is.na() %>%
+  sum()
+# steps
+steps %>%
+  is.na() %>%
+  sum()
+```
+
+Podemos verificar que não há valores nulos nos conjuntos de dados analisados.
+
+Agora vamos verificar se há valores duplicados nos conjuntos de dados.
+
+```{r}
+# activity
+sum(duplicated(activity))
+# calories
+sum(duplicated(calories))
+# intensity
+sum(duplicated(intensities))
+# sleep
+sum(duplicated(sleep))
+# steps
+sum(duplicated(steps))
+```
+
+Percebi que o conjunto de dados "sleep" possui 3 linhas duplicadas. Já os outros conjuntos de dados não apresentam dados duplicados. Desta forma, decidi remover as linhas duplicadas da tabela "sleep".
+
+```{r}
+sleep_novo <- sleep[!duplicated(sleep), ]
+```
+
+Vamos verificar novamente as linhas duplicadas.
+
+```{r}
+sum(duplicated(sleep_novo))
+```
+
+Linhas duplicadas removidas.
+
+##### **Após a inspeção e limpeza dos dados, verfica-se que o conjunto de dados possui diversas limitações, tais como:**
+
+• Há 33 usuários ao invés dos 30 que constam na descrição do conjunto de dados, ou seja, já é verificada inconstistência nas informações de coleta e nos dados apresentados;
+
+• Os dados representam apenas 33 usuários do Fitbit, portanto, podemos ter viés de seleção da amostra;
+
+• Foram coletados dados durante 31 dias. Todavia, não há informações completas de todos os usuários durante os 31 dias de amostragem;
+
+• Os dados foram coletados durante o ano de 2016, portanto, os dados estão desatualizados e o comportamento dos usuários pode ter mudado desde então;
+
+• A empresa Fitbit não é focada apenas no público feminino e não há informações sobre o sexo dos usuários participantes da coleta de dados. Desta forma, as conclusões possuem utilidade preditiva limitada. Além disso, os dados devem ser complementados com outros conjuntos de dados mais completo para fazer uma boa análise;
+
+• Os dados são incoerentes, pois não há descrição referente as unidades coletadas nos conjuntos de dados. Os metadados não fornecem qualquer tipo de informação.
+
+### Análise dos dados
+
+Agora vou utilizar a função summary(), que fornece um sumário estatístico descritivo dos dados quantitativos.
+
+```{r}
+# Vamos explorar o número de passos por dia, a distânica por dia, o tempo sedentário em minutos e as calorias por dia
+activity %>%
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes,
+         Calories) %>%
+  summary()
+
+# Vamos explorar o número de minutos ativos por categoria
+activity %>%
+  select(VeryActiveMinutes,
+         FairlyActiveMinutes,
+         LightlyActiveMinutes) %>%
+  summary()
+
+# Vamos explorar as calorias gastas por hora
+calories %>%
+  select(Calories) %>%
+  summary()
+
+# Vamos explorar as informações sobre o sono
+sleep_novo %>%
+  select(TotalSleepRecords,
+         TotalMinutesAsleep,
+         TotalTimeInBed) %>%
+  summary()
+```
+
+**Algumas descobertas interessantes deste resumo:**
+
+• A média de passos totais por dia é de 7638, um pouco menos do que é recomendado para ter benefícios para a saúde, de acordo com estudos do Centers for Disease Control and Prevention (CDC)^1^. Eles descobriram que, em comparação com dar 4.000 passos por dia, um número considerado baixo para adultos, dar 8.000 passos por dia estava associado a um risco 51% menor de mortalidade por todas as causas (ou morte por todas as causas). Dar 12.000 passos por dia foi associado a um risco 65% menor em comparação com dar 4.000 passos;
+
+• A distância total média por dia é de 5,49 km;
+
+• O período médio em que os participantes são muito ativos é de aproximadamente 21 minutos; já o período em que os usuários são moderadamente ativos é de aproximadamente 14 minutos; por fim, o período em que os participantes são levemente ativos é aproximadamente 193 minutos ou 3,2 horas;
+
+• O tempo médio sedentário é de aproximadamente 991 minutos ou 16 horas. Definitivamente precisa ser reduzido!
+
+• A média de calorias queimadas por participantes diariamente é 2304 kcal. Se considerarmos a queima de calorias por hora, a média é 97,39 kcal;
+
+• Em média, os participantes dormem 1 vez por aproximadamente 419 minutos ou 7 horas.
+
+^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html>
+
+**Mesclando conjunto de dados**
+
+Para facilitar a análise e gerar visualizações, vou mesclar dois conjuntos de dados. Vou mesclar (inner join) a tabela "activity" e a tabela "sleep_novo", utilizando as colunas "Id" e "date" como colunas de junção.
+
+```{r}
+activity_sleep <- merge(activity, sleep_novo, by = c('Id', 'date'))
+head(activity_sleep)
+```
+
+```{r}
+n_distinct(activity_sleep$Id)
+```
+
+Como tínhamos apenas 24 IDs exclusivos para o conjunto de dados "sleep_novo", temos apenas aqueles IDs no conjunto combinado. Para obtermos todos os IDs exclusivos do conjunto de dados activity, usarei a mescla outer join.
+
+```{r}
+new_activity_sleep <- merge(activity, sleep_novo, by = c('Id', 'date'), all = TRUE)
+head(activity_sleep)
+```
+
+```{r}
+n_distinct(new_activity_sleep$Id)
+```
+
+Agora nós temos toda a amostra de usuários sendo representada.
+
+**Verificando a correlação entre o total de passos em relação as calorias**
+
+```{r}
+ggplot(data = new_activity_sleep, aes(x = TotalSteps, y = Calories)) +
+  geom_point() +
+  stat_smooth(method = lm) +
+  labs(title = "Total de Passos X Calorias")
+```
+
+Analisando o gráfico, podemos ver uma correlação positiva entre Total de Passos e Calorias, ou seja, quanto mais ativos somos, mais calorias queimamos.
+
+**Verificando o percentual da intensidade de atividades**
+
+```{r}
+# Calculando o total de minutos por intensidade das atividades
+new_activity_sleep$VeryActiveMinutes %>%
+  sum()
+new_activity_sleep$FairlyActiveMinutes %>%
+  sum()
+new_activity_sleep$LightlyActiveMinutes %>%
+  sum()
+new_activity_sleep$SedentaryMinutes %>%
+  sum()
+```
+
+```{r}
+# Criando um conjunto de dados sobre a atividade
+df_active = data.frame("slices" = c(19895, 12751, 181244, 931738), "lbls" = c("Very Active", "Fairly Active", "Lightly Active", "Sedentary"))
+```
+
+```{r}
+# Calculando a porcentagem pela atividade
+pct <- round(df_active$slices/sum(df_active$slices)*100, 2)
+head(pct)
+```
+
+```{r}
+# Adicionando o percentual no conjunto de dados
+df_active = data.frame("lbls" = c("Muito Ativo", "Moderadamente Ativo", "Levemente Ativo", "Sedentário"), "slices" = c(20029, 12852, 182023, 933903), "pct" = c(1.74, 1.11, 15.82, 81.33))
+```
+
+```{r}
+glimpse(df_active)
+```
+
+```{r}
+# Configurando as posições dos labels
+df2 <- df_active %>% 
+  mutate(csum = rev(cumsum(rev(pct))), 
+         pos = pct/2 + lead(csum, 1),
+         pos = if_else(is.na(pos), pct/2, pos))
+
+# Gerando o gráfico de pizza
+ggplot(df_active, aes(x = "" , y = pct, fill = fct_inorder(lbls))) +
+  geom_col(width = 1, color = 1) +
+  coord_polar(theta = "y") +
+  scale_fill_brewer(palette = "Pastel1") +
+  geom_label_repel(data = df2,
+                   aes(y = pos,label = paste0(pct, "%")),
+                   size = 4.5,nudge_x = 1, show.legend = FALSE) +
+  guides(fill = guide_legend(title = "")) +
+  theme_void()
+```
+
+Como pode ser analisado no gráfico de pizza, usuários com minutos sedentários ocupam a maior fatia com 81,33%. O aplicativo da FitBit raramente está sendo usado para acompanhar o condicionamento físico mais intenso, como corrida, por exemplo. Isto pode ser observado na percentagem menor das atividades muito e moderadamente ativas, sendo 1,74% e 1,11%, respectivamente. Esta análise é altamente desencorajadora, pois o aplicativo FitBit foi desenvolvido para incentivar o condicionamento físico.
+
+**Verificando a relação entre total de passos e a intensidade de atividade em minutos**
+
+```{r}
+# Criando uma tabela com as atividades por minuto
+Active_min <- gather(new_activity_sleep, key = "ActiveMinutes", value = "Minutes", 12:15)
+
+# Alterando o nome das categorias
+Active_min$ActiveMinutes[Active_min$ActiveMinutes == "FairlyActiveMinutes"] <- "Moderadamente Ativo"
+Active_min$ActiveMinutes[Active_min$ActiveMinutes == "VeryActiveMinutes"] <- "Muito Ativo"
+Active_min$ActiveMinutes[Active_min$ActiveMinutes == "LightlyActiveMinutes"] <- "Levemente Ativo"
+Active_min$ActiveMinutes[Active_min$ActiveMinutes == "SedentaryMinutes"] <- "Sedentário"
+```
+
+```{r}
+# Média TotalSteps e Minutes
+Active_min %>%
+  select(TotalSteps, Minutes) %>%
+  summary()
+```
+
+```{r}
+# Gerando o gráfico de disperção
+ggplot(data = Active_min, aes(x = TotalSteps, y = Minutes, color = ActiveMinutes)) +
+  geom_point(size=2) +
+  geom_hline(aes(yintercept = mean(Minutes)), color = "Blue", size = 1) +
+  geom_vline(aes(xintercept = mean(TotalSteps)), color = "red", size = 1) +
+  scale_y_continuous(breaks = sort(c(seq(0,1500,250))), 
+                     labels = paste0(sort(c(seq(0,1500,250)))),
+                     sec.axis = sec_axis(trans=~., breaks = 304.7, labels=paste0(304.7))) +
+  scale_x_continuous(breaks = sort(c(seq(0,50000,5000))), 
+                     labels = paste0(sort(c(seq(0,50000,5000)))),
+                     sec.axis = sec_axis(trans=~., breaks = 7638, labels=paste0(7638))) +
+  labs(title="Total de Passos X Intensidade de Atividade (min)") +
+  theme(legend.position="top") +
+  theme(legend.title = element_blank()) +
+  theme(axis.ticks.y.right = element_line(color = "Blue"),
+        axis.text.y.right = element_text(color = "Blue")) +
+  theme(axis.ticks.x.top = element_line(color = "red"),
+        axis.text.x.top = element_text(color = "red"))
+```
+
+No gráfico de dispersão, podemos notar que a maioria dos pontos de dados indicam que os usuários dão entre 5.000 e 15.000 passos diários, tendo como mádia 7.638 passos. Podemos notar também que nas diferentes categorias de atividade, os usuários passam entre 500 a 1500 minutos sendo sedentários (relativamente acima da média de atividades diárias que é 304,7 minutos). Além disso, existem dois clusters de tempo dos participantes sendo sedentários: de 500 a 800 minutos e 1000 a 1500 minutos, todavia, não há dados para entender estes clusters.
+
+Para podermos obter mais informações sobre as outras intensidades de atividades, vamos ampliar a visualização.
+
+```{r}
+# Gerando o novo gráfico de disperção em escala logarítmica
+ggplot(data = Active_min, aes(x = TotalSteps, y = Minutes, color = ActiveMinutes)) +
+  geom_point(size=2) +
+  scale_y_log10(sec.axis = sec_axis(trans=~., breaks = 304.7, labels=paste0(304.7))) +
+  scale_x_continuous(breaks = sort(c(seq(0,50000,5000))), 
+                     labels = paste0(sort(c(seq(0,50000,5000)))),
+                     sec.axis = sec_axis(trans=~., breaks = 7638, labels=paste0(7638))) +
+  geom_hline(aes(yintercept = mean(Minutes)), color = "Blue", size = 1) +
+  geom_vline(aes(xintercept = mean(TotalSteps)), color = "red", size = 1.1) +
+  labs(title="Total de Passos X Intensidade de Atividade (min)") +
+  theme(legend.position="top") +
+  theme(legend.title = element_blank()) +
+  theme(axis.ticks.y.right = element_line(color = "Blue"),
+        axis.text.y.right = element_text(color = "Blue")) +
+  theme(axis.ticks.x.top = element_line(color = "red"),
+        axis.text.x.top = element_text(color = "red"))
+```
+
+O gráfico de dispersão em escala logarítmica facilita a visualização das classificações das atividades. Há uma concentração de pontos de dados mostrando uma tendência clara de que os usuários são levemente ativos entre 100 e 600 minutos; e muito a moderadamente ativos abaixo de 100 minutos.
+
+**Verificando a relação entre o tempo total na cama e o tempo dormindo**
+
+```{r}
+# Média TotalMinutesAsleep e TotalTimeInBed
+new_activity_sleep %>%
+  select(TotalMinutesAsleep, TotalTimeInBed) %>%
+  summary()
+```
+
+```{r}
+ggplot(data = new_activity_sleep, aes(x = TotalMinutesAsleep, y = TotalTimeInBed)) +
+  geom_point(color = "black") +
+  stat_smooth(method = lm) +
+  geom_hline(aes(yintercept = 458.5), color = "orange", size = 1) +
+  geom_vline(aes(xintercept = 419.2), color = "red", size = 1) +
+  scale_y_continuous(breaks = sort(c(seq(0,1000,100))), 
+                     labels = paste0(sort(c(seq(0,1000,100)))),
+                     sec.axis = sec_axis(trans=~., breaks = 458.5, labels=paste0(458.5))) +
+  scale_x_continuous(breaks = sort(c(seq(0,900,100))), 
+                     labels = paste0(sort(c(seq(0,900,100)))),
+                     sec.axis = sec_axis(trans=~., breaks = 419.2, labels=paste0(419.2))) +
+  labs(title="Tempo na Cama X Tempo Dormindo (min)") +
+  theme(axis.ticks.y.right = element_line(color = "orange"),
+        axis.text.y.right = element_text(color = "orange")) +
+  theme(axis.ticks.x.top = element_line(color = "red"),
+        axis.text.x.top = element_text(color = "red"))
+```
+
+Neste gráfico de dispersão, vemos a relação linear e positiva entre o total de minutos dormindo e o total de minutos passados na cama. Como podemos observar, existem alguns outliers, ou seja, algumas pessoas que passaram muito tempo na cama, mas na verdade não dormiram. Há ainda um pequeno grupo que dormiu bastante e passou muito tempo na cama. Na média, os usuários passam 458,5 minutos (aproximadamente 7,6 horas) na cama e 419,2 minutos (aproximadamente 7 horas) dormindo.
+
+**Verificando a relação entre o intensidade da atividade ao longo do dia (em horas)**
+
+```{r}
+intensity <- intensities %>%
+  group_by(time) %>%
+  summarise(mean_intensity = mean(TotalIntensity))
+
+ggplot(data = intensity, aes(x = time, y = mean_intensity)) +
+  geom_histogram(stat = "identity", fill = 'blue') +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(title = "Média de Intensidade X Tempo (horas)")
+```
+
+Depois de visualizar a média de intensidade de hora em hora, podemos observar que as pessoas são mais ativas entre 6:00 e 22:00.
+
+A maioria das atividades acontece entre 12:00 a 14:00 e 17:00 a 19:00. Podemos supor que as pessoas vão para uma academia ou para uma caminhada na hora do almoço (12:00 a 14:00) e logo depois de terminar o expediente do trabalho (17:00 a 19:00).
+
+Utilizando estes horários como referência, podemos usar o aplicativo da Bellabeat para lembrar e motivar os usuários a se exercitarem nestes horários.
+
+**Verificando a relação entre o tempo dormindo e o tempo sedentário**
+
+```{r}
+ggplot(data = new_activity_sleep, aes(x = TotalMinutesAsleep, y = SedentaryMinutes)) +
+  geom_point(color = "black") +
+  stat_smooth(method = lm) +
+  labs(title="Tempo Dormindo X Tempo Sedentário (min)")
+```
+
+O Gráfico mostra claramente uma correlação negativa entre os minutos Sedentários e tempo total dormindo. Isto pode significar que, se os usuários dos produtos da BellaBeat diminuirem o tempo sedentário, é possível que eles melhorem a sua qualidade do sono.
+
+### Recomendações para Negócios com base na Análise
+
+Depois de analisar os dados dos dispositivos inteligentes da FitBit e encontrar os insights, acho que as recomendações apresentadas a seguir podem ajudar a estratégia de marketing da Bellabeat para o público-alvo específico.
+
+**Público-Alvo**
+
+Como já sabemos, a coleta de dados sobre atividade, sono, estresse e saúde é o objetivo da Bellabeat para capacitar as mulheres com conhecimento sobre sua própria saúde e hábitos. Desde que foi fundada em 2013, a Bellabeat cresceu rapidamente se posicionou como uma empresa de bem-estar voltada para a tecnologia para mulheres.
+
+**Sugestões e Ideias para os Dispositivos e Campanhas de Marketing da Bellabeat**
+
+Sedentários compõem uma parcela significativa, 81% dos participantes da pesquisa. Os usuários gastam em média 16 horas por dia sendo sedentários, entre 100 e 600 minutos fazendo atividades levemente ativas e menos de uma hora em atividades muito a moderadamente ativas.
+
+A média de passos totais por dia é de 7638, um pouco inferior do que é recomendado para ter benefícios para a saúde, de acordo com a pesquisa do CDC^1^. Eles descobriram que dar 8.000 passos por dia estava associado a um risco 51% menor de mortalidade por todas as causas (ou morte por todas as causas). Dar 12.000 passos por dia foi associado a um risco 65% menor em comparação com dar 4.000 passos. Bellabeat pode encorajar as mulheres a caminhar pelo menos 8.000 passos, explicando os benefícios para sua saúde.
+
+Se os usuários querem perder peso, provavelmente é uma boa ideia controlar o consumo diário de calorias. A Bellabeat pode sugerir algumas ideias para almoço e jantar de baixa caloria.
+
+A maioria das atividades acontece entre 12:00 a 14:00 e 17:00 a 19:00. Suponho que as pessoas vão para uma academia ou para uma caminhada no intervalo do almoço ou logo após terminar o trabalho. O dispositivo da Bellabeat pode usar estes horários para lembrar e motivar os usuários a se exercitar nestes momentos.
+
+Recomenda-se que os usuários sejam motivados a fazer exercícios de alta intensidade após o expediante de trabalho, entre 17:00 e 19:00, pois os dados mostram que os usuários são mais ativos nesse período do dia e depois podem ir para casa descançar e aproveitar para compartilhar experiências com familiares e/ou amigos.
+
+Os usuários devem ser motivados a melhorar seus hábitos saudáveis e saber mais sobre sua própria saúde (Bellabeat pode pensar nessa direção ao fazer sua estratégia de marketing).
+
+Os dados mostram que os usuários com alto tempo sedentário têm menor tempo de sono, o que afeta a qualidade do sono, o que, por sua vez, tem efeitos negativos na saúde. Portanto, o aplicativo pode lembrar os usuários de caminhar ou fazer movimentos em intervalos regulares. Como ideia: se os usuários quiserem melhorar o sono, o aplicativo Bellabeat pode recomendar a redução do tempo sedentário.
+
+Se os usuários quiserem melhorar seu sono, a Bellabeat deve considerar o uso de notificações avisando que é hora de ir para a cama dormir. Mais tempo na cama mostra mais tempo dormindo, portanto, o aplicativo pode notificar os usuários sobre a hora de dormir diariamente, o que também pode melhorar seu ciclo de sono, sua saúde mental e física geral.
+
+**A mensagem chave para a campanha de marketing da Bellabeat**
+
+Os dispositivos da Bellabeat não são apenas mais uma ferramenta para acompanhar as atividades física. É um guia (um companheiro) que capacita as mulheres a equilibrar a vida pessoal e profissional, juntando hábitos e rotinas saudáveis, educando-as e motivando-as por meio de recomendações diárias através dos seus dispositvos e aplicativos.
+
+**Recomendações de marketing para expansão:**
+
+• Realizar campanhas educativas sobre estilo de vida saudável, que pode ser combinada com um sistema de incentivos de premiação por pontos, por exemplo. Desta forma, as usuárias que completarem os objetivos (execícios, queima de calorias, tempo de dormir) da semana receberão pontos Bellabeat, que poderão resgatar em produtos/assinaturas;
+
+• Os dispositivos podem emitir sons ou vibrar após um período prolongado de minutos sedentários, sinalizando ao usuário que é hora de ficar ativo! Da mesma forma, também podem lembrar as usuárias que é hora de dormir depois de sentir um tempo prolongado de vigília na cama.
+
+**Recomendações para aprimorar a análise e obtenção de mais Insights:**
+
+• Obter dados completos e com mais usuários para uma análise mais precisa e eficiente, incentivando os usuários a se manterem sempre conectados para alimentar o banco de dados.
+
+^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html>
+
+#### [**Voltar para página de Projetos no GitHub**](https://github.com/gustavogcunha)
