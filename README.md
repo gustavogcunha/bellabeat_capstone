@@ -37,4 +37,4 @@
 
 **Para ver o projeto, clique no link abaixo:**
 
-[Estudo de Caso Bellabeat](https://htmlpreview.github.io/?https://github.com/ggcunha/bellabeat_capstone/blob/main/Bellabeat_Capstone.html)
+[Estudo de Caso Bellabeat](https://htmlpreview.github.io/?https://github.com/gustavogcunha/bellabeat_capstone/blob/main/Bellabeat_Capstone.html)
