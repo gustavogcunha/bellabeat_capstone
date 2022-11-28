@@ -3,9 +3,19 @@ title: ""
 output: html_document
 ---
 
-## **Estudo de Caso Bellabeat**
+ 
+
+<h1 align="center">
+
+Estudo de Caso Bellabeat
+
+</h1>
+
+ 
 
 Esta análise é um ESTUDO DE CASO proposto para concluir com sucesso a FORMAÇÃO PROFISSIONAL GOOGLE DATA ANALYTICS e obter o certificado no final do curso. A proposta é simular um projeto real, na qual um analista de dados poderia encontrar profissionalmente, tendo como o objetivo ajudar a equipe de marketing a obter insigths para novas estratégias comerciais da empresa.
+
+ 
 
 ### Sobre a Empresa
 
@@ -15,9 +25,13 @@ A Bellabeat é uma fabricante de produtos de alta tecnologia voltados para a sa�
 
 Urška Sršen e Sando Mur, fundadores da empresa, acreditam que os dados coletados de condicionamento físico, através de dispositivos inteligentes, podem ajudar a obter novas oportunidades de crescimento da empresa.
 
+ 
+
 ### Cenário
 
 Eu sou um analista de dados, que trabalha na equipe de analistas de marketing da empresa. Nosso objetivo é identificar oportunidades potenciais de crescimento e recomendações para melhorar as estratégias de marketing da empresa, com base nas tendências de uso dos dispositivos inteligentes.
+
+ 
 
 ### Perguntas para atingir a meta da análise
 
@@ -27,6 +41,8 @@ Eu sou um analista de dados, que trabalha na equipe de analistas de marketing da
 
 • COMO essas tendências podem ajudar a influenciar a estratégia de marketing da Bellabeat?
 
+ 
+
 ### Informações sobre o conjunto de dados
 
 O conjunto de dados é público e está armazenado na nuvem e disponível no link:
@@ -35,11 +51,15 @@ O conjunto de dados é público e está armazenado na nuvem e disponível no lin
 
 Os dados são referentes a informações coletadas de usuários da empresa Fitbit (empresa concorrente da Bellabeat). Este conjunto de dados apresentam informações de condicionamento físico pessoal de trinta usuários da Fitbit, que consentiram com o envio de dados pessoais do rastreador, incluindo quantidade de horas e minuto de atividade física, frequência cardíaca e monitoramento de sono, que podem ser usadas para explorar os hábitos dos usuários.
 
+ 
+
 ### Ferramentas Utilizadas para Análise
 
 • Microsoft (MS) Excel: Utilizado para realizar a inspeção inicial dos dados;
 
-• R Studio: Utilizado para limpar, transformar, organizar, resumir os conjuntos de dados e criar visualizações. Aqui está o link para script: [**link**](https://github.com/gustavogcunha/bellabeat_capstone/blob/main/Script_Bellabeat_Capstone.R)
+• R Studio: Utilizado para limpar, transformar, organizar, resumir os conjuntos de dados e criar visualizações. Aqui está o link para script: [***link***](https://github.com/gustavogcunha/bellabeat_capstone/blob/main/Script_Bellabeat_Capstone.R)
+
+ 
 
 ### Preparação dos Dados
 
@@ -50,6 +70,8 @@ Os trinta usuários do fitbit consentiram em fornecer seus dados e foram gerados
 Durante a inspeção inicial, foram analisados os arquivos csv e observou-se que os arquivos "dailyCalories", "dailyIntensity" e "dailySteps", já estão incluídos no arquivo "dailyActivity". Desta forma, estes três arquivos não serão utilizados. Da mesma forma, optou-se por utilizar apenas os dados de hora em hora, então nenhum conjunto de dados "por minuto" ou "por segundo" será importado ou usado para esta análise.
 
 Portanto, para esta análise, o conjunto de dados relevantes que serão utilizados são: "dailyActivity", "hourlyCalories", "hourlyIntensities", "hourlySteps", "sleepDay" e "weightLogInfo".
+
+ 
 
 ### Instalando e Carregando os Pacotes
 
@@ -71,6 +93,8 @@ library(tidyr)
 library(ggrepel)
 ```
 
+ 
+
 ### Importando o Conjunto de Dados
 
 ```{r}
@@ -82,7 +106,9 @@ sleep <- read.csv("Dataset/sleepDay_merged.csv")
 weight <- read.csv("Dataset/weightLogInfo_merged.csv")
 ```
 
-Para checar se os dados foram corretamente importados, vou utilizar as função head()
+ 
+
+Para checar se os dados foram corretamente importados, vou utilizar as função head().
 
 ```{r}
 head(activity)
@@ -92,6 +118,8 @@ head(steps)
 head(sleep)
 head(weight)
 ```
+
+ 
 
 Continuando a checagem dos dados, vou utilizar a função glimpse(), que mostra o número de linhas, número de colunas, nomes de coluna e tipos de dados das colunas.
 
@@ -103,6 +131,8 @@ glimpse(steps)
 glimpse(sleep)
 glimpse(weight)
 ```
+
+ 
 
 ### Limpeza dos dados
 
@@ -135,6 +165,8 @@ weight$date <- format(weight$Date, format = "%d/%m/%Y")
 weight$time <- format(weight$Date, format = "%H:%M:%S")
 ```
 
+ 
+
 Agora que os dados estão formatados, o próximo passo é explorar os conjuntos de dados.
 
 ```{r}
@@ -145,6 +177,8 @@ n_distinct(sleep$Id)
 n_distinct(steps$Id)
 n_distinct(weight$Id)
 ```
+
+ 
 
 A informação acima apresenta o número de participantes em cada conjunto de dados.
 
@@ -162,6 +196,8 @@ n_distinct(sleep$date)
 n_distinct(steps$date)
 ```
 
+ 
+
 Todos os conjuntos de dados apresentam a coleta de informações durante 31 dias. Todavia, não quer dizer que todos os participantes possuem informações coletadas durante estes 31 dias.
 
 ```{r}
@@ -169,6 +205,8 @@ activity %>%
   group_by(Id) %>%
   summarise(Days = length(unique(date)))
 ```
+
+ 
 
 É possível observar que vários usuários que participaram da pesquisa (Id) não possuem dados coletados durante os 31 dias.
 
@@ -183,6 +221,8 @@ user_day %>%
   group_by(Days) %>%
   summarise(User = length(unique(Id)))
 ```
+
+ 
 
 Segundo os dados acima é possível verificar que 21 participantes possuem dados coletados durante os 31 dias de pesquisa. O restante não possuem dados completos.
 
@@ -211,6 +251,8 @@ steps %>%
   sum()
 ```
 
+ 
+
 Podemos verificar que não há valores nulos nos conjuntos de dados analisados.
 
 Agora vamos verificar se há valores duplicados nos conjuntos de dados.
@@ -228,11 +270,15 @@ sum(duplicated(sleep))
 sum(duplicated(steps))
 ```
 
+ 
+
 Percebi que o conjunto de dados "sleep" possui 3 linhas duplicadas. Já os outros conjuntos de dados não apresentam dados duplicados. Desta forma, decidi remover as linhas duplicadas da tabela "sleep".
 
 ```{r}
 sleep_novo <- sleep[!duplicated(sleep), ]
 ```
+
+ 
 
 Vamos verificar novamente as linhas duplicadas.
 
@@ -240,7 +286,12 @@ Vamos verificar novamente as linhas duplicadas.
 sum(duplicated(sleep_novo))
 ```
 
+ 
+
 Linhas duplicadas removidas.
+
+
+ 
 
 ##### **Após a inspeção e limpeza dos dados, verfica-se que o conjunto de dados possui diversas limitações, tais como:**
 
@@ -255,6 +306,9 @@ Linhas duplicadas removidas.
 • A empresa Fitbit não é focada apenas no público feminino e não há informações sobre o sexo dos usuários participantes da coleta de dados. Desta forma, as conclusões possuem utilidade preditiva limitada. Além disso, os dados devem ser complementados com outros conjuntos de dados mais completo para fazer uma boa análise;
 
 • Os dados são incoerentes, pois não há descrição referente as unidades coletadas nos conjuntos de dados. Os metadados não fornecem qualquer tipo de informação.
+
+ 
+
 
 ### Análise dos dados
 
@@ -289,6 +343,8 @@ sleep_novo %>%
   summary()
 ```
 
+ 
+
 **Algumas descobertas interessantes deste resumo:**
 
 • A média de passos totais por dia é de 7638, um pouco menos do que é recomendado para ter benefícios para a saúde, de acordo com estudos do Centers for Disease Control and Prevention (CDC)^1^. Eles descobriram que, em comparação com dar 4.000 passos por dia, um número considerado baixo para adultos, dar 8.000 passos por dia estava associado a um risco 51% menor de mortalidade por todas as causas (ou morte por todas as causas). Dar 12.000 passos por dia foi associado a um risco 65% menor em comparação com dar 4.000 passos;
@@ -303,7 +359,10 @@ sleep_novo %>%
 
 • Em média, os participantes dormem 1 vez por aproximadamente 419 minutos ou 7 horas.
 
-^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html>
+^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html> (Obs: Não achei informação oficial sobre o assunto no Brasil).
+
+
+ 
 
 **Mesclando conjunto de dados**
 
@@ -318,6 +377,8 @@ head(activity_sleep)
 n_distinct(activity_sleep$Id)
 ```
 
+ 
+
 Como tínhamos apenas 24 IDs exclusivos para o conjunto de dados "sleep_novo", temos apenas aqueles IDs no conjunto combinado. Para obtermos todos os IDs exclusivos do conjunto de dados activity, usarei a mescla outer join.
 
 ```{r}
@@ -329,7 +390,11 @@ head(activity_sleep)
 n_distinct(new_activity_sleep$Id)
 ```
 
+ 
+
 Agora nós temos toda a amostra de usuários sendo representada.
+
+ 
 
 **Verificando a correlação entre o total de passos em relação as calorias**
 
@@ -340,7 +405,11 @@ ggplot(data = new_activity_sleep, aes(x = TotalSteps, y = Calories)) +
   labs(title = "Total de Passos X Calorias")
 ```
 
+ 
+
 Analisando o gráfico, podemos ver uma correlação positiva entre Total de Passos e Calorias, ou seja, quanto mais ativos somos, mais calorias queimamos.
+
+ 
 
 **Verificando o percentual da intensidade de atividades**
 
@@ -395,7 +464,11 @@ ggplot(df_active, aes(x = "" , y = pct, fill = fct_inorder(lbls))) +
   theme_void()
 ```
 
+ 
+
 Como pode ser analisado no gráfico de pizza, usuários com minutos sedentários ocupam a maior fatia com 81,33%. O aplicativo da FitBit raramente está sendo usado para acompanhar o condicionamento físico mais intenso, como corrida, por exemplo. Isto pode ser observado na percentagem menor das atividades muito e moderadamente ativas, sendo 1,74% e 1,11%, respectivamente. Esta análise é altamente desencorajadora, pois o aplicativo FitBit foi desenvolvido para incentivar o condicionamento físico.
+
+ 
 
 **Verificando a relação entre total de passos e a intensidade de atividade em minutos**
 
@@ -438,6 +511,8 @@ ggplot(data = Active_min, aes(x = TotalSteps, y = Minutes, color = ActiveMinutes
         axis.text.x.top = element_text(color = "red"))
 ```
 
+ 
+
 No gráfico de dispersão, podemos notar que a maioria dos pontos de dados indicam que os usuários dão entre 5.000 e 15.000 passos diários, tendo como mádia 7.638 passos. Podemos notar também que nas diferentes categorias de atividade, os usuários passam entre 500 a 1500 minutos sendo sedentários (relativamente acima da média de atividades diárias que é 304,7 minutos). Além disso, existem dois clusters de tempo dos participantes sendo sedentários: de 500 a 800 minutos e 1000 a 1500 minutos, todavia, não há dados para entender estes clusters.
 
 Para podermos obter mais informações sobre as outras intensidades de atividades, vamos ampliar a visualização.
@@ -461,7 +536,11 @@ ggplot(data = Active_min, aes(x = TotalSteps, y = Minutes, color = ActiveMinutes
         axis.text.x.top = element_text(color = "red"))
 ```
 
+ 
+
 O gráfico de dispersão em escala logarítmica facilita a visualização das classificações das atividades. Há uma concentração de pontos de dados mostrando uma tendência clara de que os usuários são levemente ativos entre 100 e 600 minutos; e muito a moderadamente ativos abaixo de 100 minutos.
+
+ 
 
 **Verificando a relação entre o tempo total na cama e o tempo dormindo**
 
@@ -491,7 +570,11 @@ ggplot(data = new_activity_sleep, aes(x = TotalMinutesAsleep, y = TotalTimeInBed
         axis.text.x.top = element_text(color = "red"))
 ```
 
+ 
+
 Neste gráfico de dispersão, vemos a relação linear e positiva entre o total de minutos dormindo e o total de minutos passados na cama. Como podemos observar, existem alguns outliers, ou seja, algumas pessoas que passaram muito tempo na cama, mas na verdade não dormiram. Há ainda um pequeno grupo que dormiu bastante e passou muito tempo na cama. Na média, os usuários passam 458,5 minutos (aproximadamente 7,6 horas) na cama e 419,2 minutos (aproximadamente 7 horas) dormindo.
+
+ 
 
 **Verificando a relação entre o intensidade da atividade ao longo do dia (em horas)**
 
@@ -506,11 +589,15 @@ ggplot(data = intensity, aes(x = time, y = mean_intensity)) +
   labs(title = "Média de Intensidade X Tempo (horas)")
 ```
 
+ 
+
 Depois de visualizar a média de intensidade de hora em hora, podemos observar que as pessoas são mais ativas entre 6:00 e 22:00.
 
 A maioria das atividades acontece entre 12:00 a 14:00 e 17:00 a 19:00. Podemos supor que as pessoas vão para uma academia ou para uma caminhada na hora do almoço (12:00 a 14:00) e logo depois de terminar o expediente do trabalho (17:00 a 19:00).
 
 Utilizando estes horários como referência, podemos usar o aplicativo da Bellabeat para lembrar e motivar os usuários a se exercitarem nestes horários.
+
+ 
 
 **Verificando a relação entre o tempo dormindo e o tempo sedentário**
 
@@ -521,15 +608,25 @@ ggplot(data = new_activity_sleep, aes(x = TotalMinutesAsleep, y = SedentaryMinut
   labs(title="Tempo Dormindo X Tempo Sedentário (min)")
 ```
 
+ 
+
 O Gráfico mostra claramente uma correlação negativa entre os minutos Sedentários e tempo total dormindo. Isto pode significar que, se os usuários dos produtos da BellaBeat diminuirem o tempo sedentário, é possível que eles melhorem a sua qualidade do sono.
+
+ 
 
 ### Recomendações para Negócios com base na Análise
 
+ 
+
 Depois de analisar os dados dos dispositivos inteligentes da FitBit e encontrar os insights, acho que as recomendações apresentadas a seguir podem ajudar a estratégia de marketing da Bellabeat para o público-alvo específico.
+
+ 
 
 **Público-Alvo**
 
 Como já sabemos, a coleta de dados sobre atividade, sono, estresse e saúde é o objetivo da Bellabeat para capacitar as mulheres com conhecimento sobre sua própria saúde e hábitos. Desde que foi fundada em 2013, a Bellabeat cresceu rapidamente se posicionou como uma empresa de bem-estar voltada para a tecnologia para mulheres.
+
+ 
 
 **Sugestões e Ideias para os Dispositivos e Campanhas de Marketing da Bellabeat**
 
@@ -549,9 +646,13 @@ Os dados mostram que os usuários com alto tempo sedentário têm menor tempo de
 
 Se os usuários quiserem melhorar seu sono, a Bellabeat deve considerar o uso de notificações avisando que é hora de ir para a cama dormir. Mais tempo na cama mostra mais tempo dormindo, portanto, o aplicativo pode notificar os usuários sobre a hora de dormir diariamente, o que também pode melhorar seu ciclo de sono, sua saúde mental e física geral.
 
+ 
+
 **A mensagem chave para a campanha de marketing da Bellabeat**
 
 Os dispositivos da Bellabeat não são apenas mais uma ferramenta para acompanhar as atividades física. É um guia (um companheiro) que capacita as mulheres a equilibrar a vida pessoal e profissional, juntando hábitos e rotinas saudáveis, educando-as e motivando-as por meio de recomendações diárias através dos seus dispositvos e aplicativos.
+
+ 
 
 **Recomendações de marketing para expansão:**
 
@@ -559,10 +660,19 @@ Os dispositivos da Bellabeat não são apenas mais uma ferramenta para acompanha
 
 • Os dispositivos podem emitir sons ou vibrar após um período prolongado de minutos sedentários, sinalizando ao usuário que é hora de ficar ativo! Da mesma forma, também podem lembrar as usuárias que é hora de dormir depois de sentir um tempo prolongado de vigília na cama.
 
+ 
+
 **Recomendações para aprimorar a análise e obtenção de mais Insights:**
 
 • Obter dados completos e com mais usuários para uma análise mais precisa e eficiente, incentivando os usuários a se manterem sempre conectados para alimentar o banco de dados.
 
-^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html>
+ 
+
+^1^ <https://www.cdc.gov/media/releases/2020/p0324-daily-step-count.html> (Obs: Não achei informação oficial sobre o assunto no Brasil).
+
+ 
 
 #### [**Voltar para página de Projetos no GitHub**](https://github.com/gustavogcunha)
+
+ 
+
